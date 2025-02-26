@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ template "loginform.resourceName" . }}
+  labels:
+    {{ include "loginform.labels" . }}
+spec:
+  replicas: 
+  {{- if eq .Values.environment "prd" }}
+    3
+  {{- else if eq .Values.environment "uat" }}
+    2
+  {{- else }}
+    {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{ include "loginform.labels" . }}
+  template:
+    metadata:
+      name: {{ include "loginform.resourceName" . }}
+      labels:
+        {{ include "loginform.labels" . }}
+    spec:
+      containers:
+        - name: {{ include "loginform.resourceName" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+          resources:
+            {{- with .Values.resources }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            {{- if .Values.livenessProbe.enabled }}
+            {{- .Values.livenessProbe | toYaml | nindent 12 }}
+            {{- end }}
+          readinessProbe:
+            {{- if .Values.readinessProbe.enabled }}
+            {{- .Values.readinessProbe | toYaml | nindent 12 }}
+            {{- end }}
+
