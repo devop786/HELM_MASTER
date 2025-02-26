@@ -49,7 +49,7 @@ service:
   port: 80
 ingress:
   enabled: true
-  hostname: loginform.example.com
+  
 ```
 
 Then apply using:
